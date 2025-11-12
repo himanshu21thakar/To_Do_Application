@@ -1,0 +1,35 @@
+# Python
+*.py[cod]
+__pycache__/
+*.so
+
+# Virtual environments
+env/
+.venv/
+venv/
+
+# Django
+*.log
+*.pot
+*.pyc
+db.sqlite3
+media/
+staticfiles/
+
+# IDEs
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Env files
+.env
+
+# Byte-compiled
+*.pyc
+
+# Migrations (keep the folder, ignore compiled files)
+**/migrations/*.pyc
+**/migrations/__pycache__/

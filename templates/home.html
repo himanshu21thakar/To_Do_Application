@@ -1,0 +1,349 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TODO LIST - Home</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+
+    <style>
+        :root {
+            --primary-color: #6c757d; /* Soft Grey/Primary */
+            --secondary-color: #0d6efd; /* Blue/Secondary */
+            --done-color: #d1e7dd; /* Light Green for done tasks */
+        }
+        body {
+            background-color: #f8f9fa; /* Light background */
+        }
+        /* Sticky header/navbar */
+        .navbar {
+            background-color: var(--secondary-color) !important;
+        }
+        .container-main {
+            padding-top: 80px; /* Space for fixed navbar */
+        }
+        /* Form control for input field */
+        .form-control {
+            padding: 1rem 0.75rem !important; /* Slightly smaller padding */
+            border-radius: 0.5rem 0 0 0.5rem;
+        }
+        /* Task item styling */
+        .task-item {
+            transition: all 0.3s ease;
+            margin-bottom: 8px !important;
+            border-left: 5px solid var(--primary-color);
+            border-radius: 0.5rem;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        .task-item:hover {
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        .completed-task {
+            border-left: 5px solid var(--primary-color);
+            background-color: var(--done-color);
+            opacity: 0.7;
+            text-decoration: line-through;
+        }
+        .task-action-buttons a {
+            margin-left: 5px;
+        }
+        /* Style for the fixed input box at the bottom */
+        .fixed-input-container {
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 760px; /* Aligns with md/lg container width */
+            padding: 1rem;
+            background-color: #ffffff; /* White background for visibility */
+            box-shadow: 0 -4px 10px rgba(0,0,0,0.1);
+            border-radius: 10px 10px 0 0;
+            z-index: 1000;
+        }
+        .scroll-area {
+            max-height: calc(100vh - 300px); /* Adjust height based on viewport */
+            overflow-y: auto;
+            padding-bottom: 2rem;
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar navbar-dark bg-dark fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'home' %}">
+                <i class="fa-solid fa-clipboard-list me-2"></i> Django ToDo
+            </a>
+            <span class="text-white me-auto">
+                <small>My Day: {% now "jS F Y" %}</small>
+            </span>
+        </div>
+    </nav>
+
+    <div class="container container-main">
+        <h3 class="mt-4 mb-3 text-center text-muted">Tasks for Today</h3>
+        
+        <!-- Reminders Alert -->
+        {% if reminders %}
+        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+            <h5 class="alert-heading">
+                <i class="fa-solid fa-bell me-2"></i> ⏰ Reminders - Time to Check Your Tasks!
+            </h5>
+            <ul class="mb-0">
+            {% for reminder in reminders %}
+                <li data-reminder-time="{{ reminder.task.reminder_time|time:'H:i' }}" 
+                    data-reminder-date="{{ reminder.task.reminder_date }}" 
+                    data-task-name="{{ reminder.task.task }}">
+                    <strong>{{ reminder.task.task }}</strong> 
+                    <br>
+                    <small>📅 {{ reminder.task.reminder_date }} at {{ reminder.task.reminder_time|time:"H:i" }}</small>
+                </li>
+            {% endfor %}
+            </ul>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endif %}
+        
+        <div class="row">
+            <div class="col-md-7 col-lg-7">
+                <h4><i class="fa-solid fa-list-check me-2 text-secondary"></i> To Do</h4>
+                <div class="scroll-area">
+                    {% for task in tasks %}
+                    <div class="card task-item m-1">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div class="flex-grow-1">
+                                    <span class="fs-5">{{ task.task }}</span>
+                                    {% if task.reminder_date and task.reminder_time %}
+                                    <br>
+                                    <small class="text-muted">
+                                        <i class="fa-solid fa-clock me-1"></i> Reminder: {{ task.reminder_date }} at {{ task.reminder_time|time:"H:i" }}
+                                    </small>
+                                    <!-- Hidden data element for client-side scheduling -->
+                                    <span class="d-none reminder-data" 
+                                          data-reminder-date="{{ task.reminder_date }}" 
+                                          data-reminder-time="{{ task.reminder_time|time:'H:i' }}" 
+                                          data-task-name="{{ task.task|escapejs }}"></span>
+                                    {% endif %}
+                                </div>
+                                <div class="task-action-buttons">
+                                    <a href="{% url 'mark_as_done' task.pk %}" class="btn btn-sm btn-success" title="Mark as Done">
+                                        <i class="fa-solid fa-check"></i>
+                                    </a>
+                                    <a href="{% url 'edit_task' task.id %}" class="btn btn-sm btn-info" title="Edit">
+                                        <i class="fa-solid fa-pencil"></i>
+                                    </a>
+                                    <a href="{% url 'delete_task' task.id %}" class="btn btn-sm btn-danger" title="Delete">
+                                        <i class="fa-solid fa-trash-can"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="col-md-5 col-lg-5">
+                <h4><i class="fa-solid fa-check-double me-2 text-success"></i> Completed</h4>
+                <div class="scroll-area">
+                    {% for task in completed_tasks %}
+                    <div class="card task-item completed-task m-1">
+                        <div class="card-body d-flex justify-content-between align-items-center">
+                            <span class="fs-5">{{ task.task }}</span>
+                            <div class="task-action-buttons">
+                                <a href="{% url 'mark_as_undone' task.pk %}" class="btn btn-sm btn-warning" title="Mark as Undone">
+                                    <i class="fa-solid fa-arrow-rotate-left"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <div class="fixed-input-container">
+            <form action="{% url 'addTask' %}" method="POST">
+                {% csrf_token %}
+                <div class="row g-2">
+                    <div class="col-md-5">
+                        <input type="text" name="task" class="form-control" placeholder="Add a new task..." required>
+                    </div>
+                    <div class="col-md-2">
+                        <input type="date" name="reminder_date" class="form-control" title="Reminder Date">
+                    </div>
+                    <div class="col-md-2">
+                        <input type="time" name="reminder_time" class="form-control" title="Reminder Time">
+                    </div>
+                    <div class="col-md-3">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fa-solid fa-plus me-1"></i> Add Task
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
+        crossorigin="anonymous"></script>
+    
+    <script>
+            // Enhanced Notification System with Audio and Visual Alerts
+            function playNotificationSound() {
+                // Create a simple beep sound using Web Audio API
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+            
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+            
+                oscillator.frequency.value = 800;
+                oscillator.type = 'sine';
+            
+                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+            
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 0.5);
+            }
+
+            function showNotificationPopup(taskName, reminderTime, reminderDate) {
+                    // Create a custom modal popup (ensure high z-index and backdrop so it appears on top)
+                    console.log('showNotificationPopup called for', taskName, reminderDate, reminderTime);
+                    const alertHtml = `
+                        <div id="notificationModal" class="modal fade show" tabindex="-1" role="dialog" style="display: block; z-index: 2050;">
+                            <div class="modal-dialog modal-dialog-centered" style="z-index:2060;">
+                                <div class="modal-content border-4 border-warning">
+                                    <div class="modal-header bg-warning text-dark">
+                                        <h5 class="modal-title">
+                                            <i class="fa-solid fa-bell me-2"></i>⏰ REMINDER ALERT!
+                                        </h5>
+                                    </div>
+                                    <div class="modal-body" style="font-size: 18px;">
+                                        <div class="mb-3">
+                                            <strong>Task:</strong> ${taskName}
+                                        </div>
+                                        <div class="mb-3">
+                                            <strong>📅 Date & Time:</strong> ${reminderDate} at ${reminderTime}
+                                        </div>
+                                        <div class="alert alert-info">
+                                            <i class="fa-solid fa-info-circle me-2"></i>
+                                            Time to work on this task!
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-success" onclick="dismissNotification()">
+                                            <i class="fa-solid fa-check me-2"></i>Got it!
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+
+                    // Remove existing modal/backdrop if present
+                    const existing = document.getElementById('notificationModal');
+                    if (existing) existing.remove();
+                    const existingBackdrop = document.getElementById('notificationBackdrop');
+                    if (existingBackdrop) existingBackdrop.remove();
+
+                    // Add backdrop and modal to body
+                    const backdropHtml = `<div id="notificationBackdrop" class="modal-backdrop fade show" style="z-index:2040;"></div>`;
+                    document.body.insertAdjacentHTML('beforeend', backdropHtml);
+                    document.body.insertAdjacentHTML('beforeend', alertHtml);
+
+                    // Play sound
+                    try { playNotificationSound(); } catch (e) { console.log('Audio play failed', e); }
+
+                    // Repeat notification sound once
+                    setTimeout(() => { try { playNotificationSound(); } catch(e) {} }, 1000);
+            }
+
+            function dismissNotification() {
+            const modal = document.getElementById('notificationModal');
+            if (modal) modal.remove();
+            const backdrop = document.getElementById('notificationBackdrop');
+            if (backdrop) backdrop.remove();
+            }
+
+            // Check for reminders on page load and schedule future notifications
+            document.addEventListener('DOMContentLoaded', function() {
+                console.log('Checking for reminders...');
+
+                // 1) Immediate reminders rendered in the alert list (li[data-reminder-time])
+                const alertsList = document.querySelectorAll('li[data-reminder-time]');
+                console.log('Found ' + alertsList.length + ' alert reminders');
+                alertsList.forEach((reminder, index) => {
+                    const reminderTime = reminder.getAttribute('data-reminder-time');
+                    const reminderDate = reminder.getAttribute('data-reminder-date');
+                    const taskName = reminder.getAttribute('data-task-name');
+                    console.log(`Alert reminder ${index + 1}: ${taskName} at ${reminderDate} ${reminderTime}`);
+                    // show immediately
+                    setTimeout(() => showNotificationPopup(taskName, reminderTime, reminderDate), index * 800);
+                });
+
+                // 2) Schedule notifications for future reminders present on the page
+                const reminderDataList = document.querySelectorAll('.reminder-data');
+                console.log('Found ' + reminderDataList.length + ' tasks with reminder-data');
+                reminderDataList.forEach((el) => {
+                    const dateStr = el.getAttribute('data-reminder-date'); // format: YYYY-MM-DD
+                    const timeStr = el.getAttribute('data-reminder-time'); // format: HH:MM
+                    const taskName = el.getAttribute('data-task-name');
+                    if (!dateStr || !timeStr) return;
+
+                    // Build ISO-like local datetime string
+                    // Add seconds to make a full time
+                    const isoLocal = `${dateStr}T${timeStr}:00`;
+                    const when = new Date(isoLocal);
+                    const now = new Date();
+                    const ms = when.getTime() - now.getTime();
+
+                    // If reminder time is in the past but within 24h, show immediately
+                    if (ms <= 0 && ms > -24 * 60 * 60 * 1000) {
+                        showNotificationPopup(taskName, timeStr, dateStr);
+                    }
+                    // If reminder is in the future and within 7 days, schedule it
+                    else if (ms > 0 && ms < 7 * 24 * 60 * 60 * 1000) {
+                        // setTimeout max is implementation-dependent, but scheduling within 7 days is fine
+                        setTimeout(() => {
+                            showNotificationPopup(taskName, timeStr, dateStr);
+                            // also try browser notification
+                            if ('Notification' in window && Notification.permission === 'granted') {
+                                new Notification('⏰ Task Reminder!', {
+                                    body: `${taskName}\n${dateStr} at ${timeStr}`,
+                                    tag: taskName,
+                                    requireInteraction: true
+                                });
+                            }
+                        }, ms);
+                        console.log(`Scheduled reminder for ${taskName} in ${Math.round(ms/1000)}s`);
+                    }
+                });
+            });
+
+            // Request notification permission on page load
+            if ('Notification' in window && Notification.permission === 'default') {
+                Notification.requestPermission().then(permission => {
+                    console.log('Notification permission: ' + permission);
+                });
+            }
+
+            // Check for reminders every 30 seconds
+            setInterval(function() {
+                location.reload();
+            }, 30000);
+    </script>
+</body>
+
+</html>

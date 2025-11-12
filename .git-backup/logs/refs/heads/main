@@ -1,0 +1,3 @@
+0000000000000000000000000000000000000000 2a0056ba54d6b5e4868151c43654730ab8646673 Himanshu Thakar <himanshu21thakar@gmail.com> 1762946161 +0530	commit (initial): Initial commit: todo app with reminders
+2a0056ba54d6b5e4868151c43654730ab8646673 2a0056ba54d6b5e4868151c43654730ab8646673 Himanshu Thakar <himanshu21thakar@gmail.com> 1762946166 +0530	Branch: renamed refs/heads/master to refs/heads/main
+2a0056ba54d6b5e4868151c43654730ab8646673 a515a36266196eb5854a0d0039c250c49eef2ed7 Himanshu Thakar <himanshu21thakar@gmail.com> 1762948214 +0530	rebase (finish): refs/heads/main onto b12931fd08e48e78d345af8e47a820b55e21963c

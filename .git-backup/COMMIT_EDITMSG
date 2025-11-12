@@ -1,0 +1,36 @@
+Initial commit: todo app with reminders
+
+# Conflicts:
+#	README.md
+
+# Please enter the commit message for your changes. Lines starting
+# with '#' will be ignored, and an empty message aborts the commit.
+#
+# interactive rebase in progress; onto b12931f
+# Last command done (1 command done):
+#    pick 2a0056b # Initial commit: todo app with reminders
+# No commands remaining.
+# You are currently rebasing branch 'main' on 'b12931f'.
+#
+# Changes to be committed:
+#	new file:   .gitignore
+#	modified:   README.md
+#	new file:   manage.py
+#	new file:   tasks/__init__.py
+#	new file:   tasks/admin.py
+#	new file:   tasks/apps.py
+#	new file:   tasks/migrations/0001_initial.py
+#	new file:   tasks/migrations/0002_task_reminder_date_task_reminder_time.py
+#	new file:   tasks/migrations/__init__.py
+#	new file:   tasks/models.py
+#	new file:   tasks/tests.py
+#	new file:   tasks/urls.py
+#	new file:   tasks/views.py
+#	new file:   templates/home.html
+#	new file:   todo_main/__init__.py
+#	new file:   todo_main/asgi.py
+#	new file:   todo_main/settings.py
+#	new file:   todo_main/urls.py
+#	new file:   todo_main/views.py
+#	new file:   todo_main/wsgi.py
+#
